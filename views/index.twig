@@ -1,0 +1,57 @@
+{% extends 'layout.twig' %}
+
+{% block body %}
+    <h1>{{ title }}</h1>
+    <p>Welcome to {{ title }}</p>
+    {% for item in post %}
+        <ul>
+            <li>{{ item.id }}) {{ item.name }}</li>
+        </ul>
+    {% endfor %}
+    <br>
+    <div>
+        <form action="/submit" method="post">
+            <h2>Form Details:</h2>
+            <table>
+                <tr>
+                    <td>First Name:</td>
+                    <td><input name="firstname" type="text" required></td>
+                </tr>
+                <tr>
+                    <td>Last Name:</td>
+                    <td><input name="lastname" type="text" required></td>
+                </tr>
+                <tr>
+                    <td>
+                        <button type="submit">Submit</button>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+    <h2>Post data from submit Form :</h2>
+    {#<p>hello {{ name }}... what are you up to!</p>#}
+
+    <form action="/delete" method="post">
+    <table border="1">
+        <tr>
+            <td>Sr.No</td>
+            <td>Full Name</td>
+            <td>Action</td>
+        </tr>
+        {% set id = 1%}
+        {% for item in persons %}
+        <tr>
+            <td>{{ id }}</td>
+            <td>{{ item.firstName }} &nbsp; {{ item.lastName }}</td>
+            <td style="color: red"><button type="submit" name="person_to_delete" value="{{ item._id }}">Delete</button></td>
+        </tr>
+            {% set id = id + 1 %}
+            {% set item_id = item.id %}
+        {% endfor %}
+    </table>
+    </form>
+
+
+{% endblock %}
