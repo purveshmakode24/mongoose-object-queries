@@ -89,7 +89,7 @@ router.post('/delete', (req, res, next) => {
     console.log(person_to_delete);
     personModel.deleteOne({_id:person_to_delete}, (err, result)=>{
         if(err)
-            console.log(err)
+            console.log(err);
         else {
             console.log('data Deleted!');
             res.redirect('/');
