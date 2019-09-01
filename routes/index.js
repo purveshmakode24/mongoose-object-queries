@@ -98,11 +98,12 @@ router.post('/delete', (req, res, next) => {
 
 });
 
-router.post('/update', (req, res, next) => {
-    let toupdateidobj = req.body.person_id_to_update;
+router.post('/update/:id', (req, res, next) => {
+    // let toupdateidobj = req.body.person_id_to_update;
+    let toupdateidobj = req.params.id;
+    console.log(toupdateidobj);
     let updatefirstname = req.body.updatefirstname;
     let updatelastname = req.body.updatelastname;
-    console.log(toupdateidobj);
     console.log(updatefirstname);
     console.log(updatelastname);
     personModel.findOneAndUpdate({_id: toupdateidobj}, {firstName:updatefirstname, lastName:updatelastname},(err, result)=>{

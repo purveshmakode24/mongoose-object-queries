@@ -64,7 +64,7 @@
 
     {% for item in persons %}
         {#---UpdateModal--------#}
-        <form action="/update" method="post">
+        <form action="/update/{{ item.id }}" method="post">
             <!-- The Modal -->
             <div class="modal" id="updateModal-{{ item.id }}">
                 <div class="modal-dialog">
@@ -80,7 +80,7 @@
                         <div class="modal-body">
                             <table>
                                 <tr>
-                                    <td><input type="text" name="person_id_to_update" value="{{ item._id }}" hidden readonly></td>
+                                    {#<td><input type="text" name="person_id_to_update" value="{{ item._id }}" hidden readonly></td>#}
                                     <td>First Name:<input type="text" class="form-control" name="updatefirstname" value="{{ item.firstName }}"
                                                           required></td>
                                     <td>Last Name: <input type="text" class="form-control" name="updatelastname" value="{{ item.lastName }}"
