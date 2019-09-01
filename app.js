@@ -20,9 +20,9 @@ app.set('view engine', 'twig');
 
 var mongoose = require("mongoose");
 mongoose.Promise = global.Promise;
-mongoose.connect("mongodb://localhost:27017/node-practice-demo");
+mongoose.connect("mongodb://localhost:27017/node-practice-demo", { useNewUrlParser: true }); //Fixed: Derprestion warning by adding { useNewUrlParser: true }
 
-
+// mongoose.set('useFindAndModify', false);
 
 app.use(logger('dev'));
 app.use(express.json());

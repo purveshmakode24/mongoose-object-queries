@@ -53,7 +53,7 @@ router.get('/', function (req, res, next) {
                 'post': postTableModel,
                 'persons': persons,
                 'persons_count': persons.length,
-                'title':'Mongoose query object: Operations'
+                'title': 'Mongoose query object: Operations'
             };
             // console.log(persons);
             console.log(persons.length);
@@ -87,8 +87,8 @@ router.post('/submit', (req, res, next) => {
 router.post('/delete', (req, res, next) => {
     let person_to_delete = req.body.person_to_delete;
     console.log(person_to_delete);
-    personModel.deleteOne({_id:person_to_delete}, (err, result)=>{
-        if(err)
+    personModel.deleteOne({_id: person_to_delete}, (err, result) => {
+        if (err)
             console.log(err);
         else {
             console.log('data Deleted!');
@@ -96,6 +96,23 @@ router.post('/delete', (req, res, next) => {
         }
     });
 
+});
+
+router.post('/update', (req, res, next) => {
+    let toupdateidobj = req.body.person_id_to_update;
+    let updatefirstname = req.body.updatefirstname;
+    let updatelastname = req.body.updatelastname;
+    console.log(toupdateidobj);
+    console.log(updatefirstname);
+    console.log(updatelastname);
+    personModel.findOneAndUpdate({_id: toupdateidobj}, {firstName:updatefirstname, lastName:updatelastname},(err, result)=>{
+        if(err)
+            console.log(err);
+        else{
+            console.log('Data Updated!');
+            res.redirect('/');
+        }
+    })
 });
 
 module.exports = router;
