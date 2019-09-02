@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var mongoose = require("mongoose");
+var flash = require('express-flash-messages');
 // var bodyParser = require('body-parser');
 //
 // var app = express();
@@ -10,13 +11,12 @@ var mongoose = require("mongoose");
 // }));
 
 var personSchema = new mongoose.Schema({
-    firstName: String,
-    lastName: String,
+    firstName: {type: String, required: true},
+    lastName: {type: String, required: true},
 });
 
 
 var personModel = mongoose.model("personModel", personSchema);
-
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -53,7 +53,9 @@ router.get('/', function (req, res, next) {
                 'post': postTableModel,
                 'persons': persons,
                 'persons_count': persons.length,
-                'title': 'Mongoose query object: Operations'
+                'title': 'Mongoose query object: Operations',
+                // 'success': success,
+                // 'errors': errors,
             };
             // console.log(persons);
             console.log(persons.length);
@@ -64,21 +66,71 @@ router.get('/', function (req, res, next) {
 
 });
 
+router.get('/submit', (req,res,next)=>{
+    res.redirect('/');
+});
+
 
 router.post('/submit', (req, res, next) => {
     // let name = req.body.firstname; //get data from template
-    console.log(req.body.firstname);
+    var errors = [];
+    var success = [];
+    var firstname = req.body.firstname;
+    var lastname = req.body.lastname;
     var myData = new personModel({
         firstName: req.body.firstname,
         lastName: req.body.lastname,
     });
     // console.log(myData);
+
     myData.save((err, doc) => {
-        if (err)
-            console.log(err);
+        if (err) {
+            // console.log(err);
+            if (!firstname || !lastname) {
+                errors.push({message: "Please Enter the Fields"});
+            }
+
+            // if (!lastname) {
+            //     errors.push({message2: "Please Enter your Last Name"});
+            // }
+
+            console.log(errors);
+            personModel.find({}, (err, persons) => {
+                if (err)
+                    res.json(err);
+                else {
+                    let context = {
+                        'persons': persons,
+                        'persons_count': persons.length,
+                        'title': 'Mongoose query object: Operations',
+                        'errors': errors,
+                    };
+                    // console.log(persons);
+                    console.log(persons.length);
+                    res.render('index', context);
+                }
+            });
+        }
         else {
             console.log("Successfully inserted!");
-            res.redirect('/');
+            success.push({message3: "Data Successfully Added!"});
+            // req.flash('success_message','Successfully Added');
+            console.log(success);
+            personModel.find({}, (err, persons) => {
+                if (err)
+                    res.json(err);
+                else {
+                    let context = {
+                        'persons': persons,
+                        'persons_count': persons.length,
+                        'title': 'Mongoose query object: Operations',
+                        'success': success,
+                    };
+                    // console.log(persons);
+                    console.log(persons.length);
+                    res.render('index', context);
+                }
+            });
         }
     });
 
@@ -106,11 +158,15 @@ router.post('/update/:id', (req, res, next) => {
     let updatelastname = req.body.updatelastname;
     console.log(updatefirstname);
     console.log(updatelastname);
-    personModel.findOneAndUpdate({_id: toupdateidobj}, {firstName:updatefirstname, lastName:updatelastname},(err, result)=>{
-        if(err)
+    personModel.findOneAndUpdate({_id: toupdateidobj}, {
+        firstName: updatefirstname,
+        lastName: updatelastname
+    }, (err, result) => {
+        if (err)
             console.log(err);
-        else{
+        else {
             console.log('Data Updated!');
+
             res.redirect('/');
         }
     })

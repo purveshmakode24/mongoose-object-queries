@@ -1,27 +1,48 @@
 {% extends 'layout.twig' %}
-
+{% extends 'error.twig' %}
 {% block body %}
     <h1>{{ title }}</h1>
     <hr>
     <p>Welcome to {{ title }}</p>
+    {#retrive from dummy data #}
     {% for item in post %}
         <ul>
             <li>{{ item.id }}) {{ item.name }}</li>
         </ul>
     {% endfor %}
-
+    {#--------------------------------#}
     <br>
     <hr>
     <div class="details-form mb-5">
         <form action="/submit" method="post">
             <h2>Form Details:</h2>
+            {% if success %}
+                {% for success in success %}
+                    <div class="alert alert-success">{{ success.message3 }}</div>
+                {% endfor %}
+            {% endif %}
+            {% if errors %}
+                {% for error in errors %}
+                    <div class="alert alert-danger">{{ error.message }}</div>
+                {% endfor %}
+            {% endif %}
             <div class="form-group">
                 <label for="fname">First Name:</label>
-                <input type="text" name="firstname" class="form-control" required>
+                <input type="text" name="firstname" class="form-control">
+                {#{% if errors %}#}
+                {#{% for error in errors %}#}
+                {#<p style="color: red">{{ error.message1 }}</p>#}
+                {#{% endfor %}#}
+                {#{% endif %}#}
             </div>
             <div class="form-group">
                 <label for="lname">Last Name:</label>
-                <input type="text" name="lastname" class="form-control" required>
+                <input type="text" name="lastname" class="form-control">
+                {#{% if errors %}#}
+                {#{% for error in errors %}#}
+                {#<p style="color: red">{{ error.message2 }}</p>#}
+                {#{% endfor %}#}
+                {#{% endif %}#}
             </div>
             <button type="submit" class="btn btn-secondary">Submit</button>
         </form>
@@ -47,7 +68,9 @@
                     <td>{{ id }}</td>
                     <td>{{ item.firstName }} &nbsp {{ item.lastName }}</td>
                     <td>
-                        <button type="submit" class="btn btn-danger" name="person_to_delete" value="{{ item._id }}">Delete</button>
+                        <button type="submit" class="btn btn-danger" name="person_to_delete" value="{{ item._id }}">
+                            Delete
+                        </button>
                     </td>
                     <td>
                         <button type="button" class="btn btn-primary" data-toggle="modal"
@@ -81,9 +104,11 @@
                             <table>
                                 <tr>
                                     {#<td><input type="text" name="person_id_to_update" value="{{ item._id }}" hidden readonly></td>#}
-                                    <td>First Name:<input type="text" class="form-control" name="updatefirstname" value="{{ item.firstName }}"
+                                    <td>First Name:<input type="text" class="form-control" name="updatefirstname"
+                                                          value="{{ item.firstName }}"
                                                           required></td>
-                                    <td>Last Name: <input type="text" class="form-control" name="updatelastname" value="{{ item.lastName }}"
+                                    <td>Last Name: <input type="text" class="form-control" name="updatelastname"
+                                                          value="{{ item.lastName }}"
                                                           required></td>
                                 </tr>
                             </table>
