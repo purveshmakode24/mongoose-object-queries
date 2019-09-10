@@ -92,14 +92,17 @@ router.get('/submit', (req, res, next) => {
 
 
 router.post('/submit',
-    [check('firstname', 'First Name with min 3 and max 12 characters is required. ').isLength({
-        min: 3,
+    [check('firstname').not().isEmpty().withMessage('This field is required.').isLength({
+        min:3,
         max: 12
-    }), check('lastname', 'Last Name with min 3 and max 12 characters is required.').isLength({min: 3, max: 12})],
+    }).withMessage('First Name with min 3 and max 12 characters is required.'),
+        check('lastname', 'Last Name with min 3 and max 12 characters is required.').not().isEmpty().withMessage('This field is required.').isLength({min:3, max: 12})],
     (req, res, next) => {
 
         // req.check('firstname', 'First name is required').isNotEmpty();
         // req.check('lastname', 'Last name is required').isNotEmpty();
+
+
 
         // var errors =req.validationErrors();
 
@@ -107,6 +110,8 @@ router.post('/submit',
         // if (!errors.isEmpty()) {
         //     return res.status(422).json({ errors: errors.array() });
         // }
+
+
 
         if (!errors.isEmpty()) {
             errs.push(errors.mapped());
@@ -119,9 +124,6 @@ router.post('/submit',
         } else {
 
             // req.session.success=true;
-            // let name = req.body.firstname; //get data from template
-            // var errors = [];
-            // var success = [];
             var firstname = req.body.firstname;
             var lastname = req.body.lastname;
             var myData = new personModel({
