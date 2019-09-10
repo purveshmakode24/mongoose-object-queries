@@ -2,6 +2,10 @@ var express = require('express');
 var router = express.Router();
 var mongoose = require("mongoose");
 var flash = require('express-flash-messages');
+var app = express();
+app.use(express.json());
+app.use(express.urlencoded({extended: false}));
+const {check, validationResult} = require('express-validator');
 // var bodyParser = require('body-parser');
 //
 // var app = express();
@@ -17,6 +21,10 @@ var personSchema = new mongoose.Schema({
 
 
 var personModel = mongoose.model("personModel", personSchema);
+
+//global var messages
+var errs = [];
+var flash_success = [];
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -41,100 +49,111 @@ router.get('/', function (req, res, next) {
         }
     ];
 
+    var json = '{ "name":"Krunal", "age":25, "city":"Rajkot", "degree": "BE"}'; //Json string form (Cant access object unless we parse it .)
+
+    var pjson = JSON.parse(json); // json objects form
+
+    // console.log(json);
+    // console.log(pjson);
+
     personModel.find({}, (err, persons) => {
         if (err)
-            res.json(err)
+            res.json(err);
         else {
-            // for(var i=0; i<persons.length; i++){
-            //     var count = i;
-            //
-            // }
+
             let context = {
                 'post': postTableModel,
                 'persons': persons,
                 'persons_count': persons.length,
                 'title': 'Mongoose query object: Operations',
                 // 'success': success,
-                // 'errors': errors,
+                'err': errs,
+                'success': flash_success,
+                // 'err': req.session.errors,
+                // 'success':req.session.success,
             };
             // console.log(persons);
+            // console.log(req.session.errors);
             console.log(persons.length);
+            // console.log(pe);
             res.render('index', context);
+            // req.session.errors = null;
+            errs = [];  //need to clear array message at every request
+            flash_success = []; // --//--
         }
     });
 
 
 });
 
-router.get('/submit', (req,res,next)=>{
+router.get('/submit', (req, res, next) => {
     res.redirect('/');
 });
 
 
-router.post('/submit', (req, res, next) => {
-    // let name = req.body.firstname; //get data from template
-    var errors = [];
-    var success = [];
-    var firstname = req.body.firstname;
-    var lastname = req.body.lastname;
-    var myData = new personModel({
-        firstName: req.body.firstname,
-        lastName: req.body.lastname,
-    });
-    // console.log(myData);
+router.post('/submit',
+    [check('firstname', 'First Name with min 3 and max 12 characters is required. ').isLength({
+        min: 3,
+        max: 12
+    }), check('lastname', 'Last Name with min 3 and max 12 characters is required.').isLength({min: 3, max: 12})],
+    (req, res, next) => {
 
-    myData.save((err, doc) => {
-        if (err) {
-            // console.log(err);
-            if (!firstname || !lastname) {
-                errors.push({message: "Please Enter the Fields"});
-            }
+        // req.check('firstname', 'First name is required').isNotEmpty();
+        // req.check('lastname', 'Last name is required').isNotEmpty();
 
-            // if (!lastname) {
-            //     errors.push({message2: "Please Enter your Last Name"});
-            // }
+        // var errors =req.validationErrors();
 
-            console.log(errors);
-            personModel.find({}, (err, persons) => {
-                if (err)
-                    res.json(err);
+        const errors = validationResult(req);
+        // if (!errors.isEmpty()) {
+        //     return res.status(422).json({ errors: errors.array() });
+        // }
+
+        if (!errors.isEmpty()) {
+            errs.push(errors.mapped());
+            // console.log(req.session.errors);
+            // res.redirect('/');
+            console.log(errs);
+            res.redirect('/');
+            // req.session.success=false;
+
+        } else {
+
+            // req.session.success=true;
+            // let name = req.body.firstname; //get data from template
+            // var errors = [];
+            // var success = [];
+            var firstname = req.body.firstname;
+            var lastname = req.body.lastname;
+            var myData = new personModel({
+                firstName: req.body.firstname,
+                lastName: req.body.lastname,
+            });
+            // console.log(myData);
+
+            myData.save((err, doc) => {
+                if (err) {
+                    console.log(err);
+                    // if (!firstname || !lastname) {
+                    //     errors.push({message: "Please Enter the Fields"});
+                    // }
+
+                    // if (!lastname) {
+                    //     errors.push({message2: "Please Enter your Last Name"});
+                    // }
+
+                }
                 else {
-                    let context = {
-                        'persons': persons,
-                        'persons_count': persons.length,
-                        'title': 'Mongoose query object: Operations',
-                        'errors': errors,
-                    };
-                    // console.log(persons);
-                    console.log(persons.length);
-                    res.render('index', context);
+                    console.log("Successfully inserted!");
+                    // success.push({message3: "Data Successfully Added!"});
+                    // req.flash('success_message','Successfully Added');
+                    // req.flash('success', 'Data has been Added Successfully');
+                    flash_success.push({message: "Data has been successfully Added!"});
+                    res.redirect('/');
                 }
             });
         }
-        else {
-            console.log("Successfully inserted!");
-            success.push({message3: "Data Successfully Added!"});
-            // req.flash('success_message','Successfully Added');
-            console.log(success);
-            personModel.find({}, (err, persons) => {
-                if (err)
-                    res.json(err);
-                else {
-                    let context = {
-                        'persons': persons,
-                        'persons_count': persons.length,
-                        'title': 'Mongoose query object: Operations',
-                        'success': success,
-                    };
-                    // console.log(persons);
-                    console.log(persons.length);
-                    res.render('index', context);
-                }
-            });
-        }
-    });
 
-});
+    });
 
 router.post('/delete', (req, res, next) => {
     let person_to_delete = req.body.person_to_delete;
@@ -144,6 +163,7 @@ router.post('/delete', (req, res, next) => {
             console.log(err);
         else {
             console.log('data Deleted!');
+            flash_success.push({message: "Data has been Deleted!"});
             res.redirect('/');
         }
     });
@@ -166,7 +186,7 @@ router.post('/update/:id', (req, res, next) => {
             console.log(err);
         else {
             console.log('Data Updated!');
-
+            flash_success.push({message: "Data Successfully Updated!"});
             res.redirect('/');
         }
     })

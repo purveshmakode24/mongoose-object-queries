@@ -1,8 +1,13 @@
 var createError = require('http-errors');
 var express = require('express');
+var bodyParser = require('body-parser');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+
+var expressValidator = require('express-validator');
+// var connectFlash = require('connect-flash');
+var session = require('express-session');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -25,8 +30,29 @@ mongoose.connect("mongodb://localhost:27017/node-practice-demo", {useNewUrlParse
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
+
+// app.use(expressValidator());
+// app = express.Router();
+
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+
+// express-session middleware (custom added)
+app.use(session({
+    secret: 'keyboard cat',
+    // resave: false,
+    resave: false,
+    saveUninitialized: false,
+    // cookie: { secure: true }
+}));
+
+// express-messages middleware (custom added)
+// app.use(require('connect-flash')());
+// app.use(function (req, res, next) {
+//     res.locals.messages = require('express-messages')(req, res);
+//     next();
+// });
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
@@ -46,5 +72,6 @@ app.use(function (err, req, res, next) {
     res.status(err.status || 500);
     res.render('error');
 });
+
 
 module.exports = app;
