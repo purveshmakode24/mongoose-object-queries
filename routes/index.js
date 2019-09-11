@@ -86,23 +86,36 @@ router.get('/', function (req, res, next) {
 
 });
 
-router.get('/submit', (req, res, next) => {
-    res.redirect('/');
-});
+// router.get('/submit', (req, res, next) => {
+//     res.redirect('/');
+// });
 
 
-router.post('/submit',
+router.post('/',
     [check('firstname').not().isEmpty().withMessage('This field is required.').isLength({
         min:3,
         max: 12
-    }).withMessage('First Name with min 3 and max 12 characters is required.'),
-        check('lastname', 'Last Name with min 3 and max 12 characters is required.').not().isEmpty().withMessage('This field is required.').isLength({min:3, max: 12})],
+    }).withMessage('First Name with min 3 and max 12 characters is required.').custom(value =>{
+        return personModel.findOne({firstName:value}).then(user => {
+            if (user) {
+                return Promise.reject('This field already in use');
+            }
+        })
+    }),
+        check('lastname').not().isEmpty().withMessage('This field is required.').isLength({min:3, max: 12}).withMessage('Last Name with min 3 and max 12 characters is required.').custom(value =>{
+            return personModel.findOne({lastName:value}).then(user => {
+                if (user) {
+                    return Promise.reject('This field already in use');
+                }
+            })
+        })],
     (req, res, next) => {
 
         // req.check('firstname', 'First name is required').isNotEmpty();
         // req.check('lastname', 'Last name is required').isNotEmpty();
 
-
+        var firstname = req.body.firstname;
+        var lastname = req.body.lastname;
 
         // var errors =req.validationErrors();
 
@@ -110,6 +123,7 @@ router.post('/submit',
         // if (!errors.isEmpty()) {
         //     return res.status(422).json({ errors: errors.array() });
         // }
+        console.log(errors);
 
 
 
@@ -118,14 +132,45 @@ router.post('/submit',
             // console.log(req.session.errors);
             // res.redirect('/');
             console.log(errs);
-            res.redirect('/');
+            // res.redirect('/');//<--------------------------------- INCLUDE IT(if u want validaion errors without rendering input value field) OR
+
+            personModel.find({}, (err, persons) => {
+                if (err)
+                    res.json(err);
+                else {
+
+                    let context = {
+                        // 'post': postTableModel,
+                        'persons': persons,
+                        'persons_count': persons.length,
+                        'title': 'Mongoose query object: Operations',
+                        // 'success': success,
+                        'err': errs,
+                        // 'success': flash_success,
+                        // 'err': req.session.errors,
+                        // 'success':req.session.success,
+                        'post_firstname': firstname,
+                        'post_lastname' : lastname,
+                    };
+                    // console.log(persons);
+                    // console.log(req.session.errors);
+                    console.log(persons.length);
+                    // console.log(pe);
+                    res.render('index', context);
+                    // req.session.errors = null;
+                    errs = [];  //need to clear array message at every request
+                    // flash_success = []; // --//--
+                }
+            });
+            // include above =>>>>if u want validaion errors with rendering input value fields
+            //=-------------------------------------------------------------------------<//
+
             // req.session.success=false;
 
         } else {
 
             // req.session.success=true;
-            var firstname = req.body.firstname;
-            var lastname = req.body.lastname;
+
             var myData = new personModel({
                 firstName: req.body.firstname,
                 lastName: req.body.lastname,
@@ -172,26 +217,56 @@ router.post('/delete', (req, res, next) => {
 
 });
 
-router.post('/update/:id', (req, res, next) => {
-    // let toupdateidobj = req.body.person_id_to_update;
-    let toupdateidobj = req.params.id;
-    console.log(toupdateidobj);
-    let updatefirstname = req.body.updatefirstname;
-    let updatelastname = req.body.updatelastname;
-    console.log(updatefirstname);
-    console.log(updatelastname);
-    personModel.findOneAndUpdate({_id: toupdateidobj}, {
-        firstName: updatefirstname,
-        lastName: updatelastname
-    }, (err, result) => {
-        if (err)
-            console.log(err);
-        else {
-            console.log('Data Updated!');
-            flash_success.push({message: "Data Successfully Updated!"});
-            res.redirect('/');
+router.post('/update/:id/:firstName/:lastName/', [check('updatefirstname').custom((value,{req})=>{
+    return personModel.findOne({firstName:value}).then(user=>{
+        if(user) {
+            if (req.params.firstName !== req.body.updatefirstname) {
+                return Promise.reject('First Name already in use');
+            }
         }
     })
+}),
+    check('updatelastname').custom((value, {req})=>{
+        return personModel.findOne({lastName:value}).then(user=>{
+            if(user) {
+                if (req.params.lastName !== req.body.updatelastname) {
+                    return Promise.reject('Last Name already in use');
+                }
+            }
+        })
+    })
+], (req, res, next)=> {
+    // let toupdateidobj = req.body.person_id_to_update;
+
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()){
+         errs.push(errors.mapped());
+         console.log(errs);
+         // console.log(errs[0][0]['msg']);
+
+         res.redirect('/');
+    }else {
+        let toupdateidobj = req.params.id;
+        console.log(toupdateidobj);
+        let updatefirstname = req.body.updatefirstname;
+        let updatelastname = req.body.updatelastname;
+        console.log(updatefirstname);
+        console.log(updatelastname);
+        personModel.findOneAndUpdate({_id: toupdateidobj}, {
+            firstName: updatefirstname,
+            lastName: updatelastname
+        }, (err, result) => {
+            if (err)
+                console.log(err);
+            else {
+                console.log('Data Updated!');
+                flash_success.push({message: "Data Successfully Updated!"});
+                res.redirect('/');
+            }
+        })
+    }
+
 });
 
 module.exports = router;

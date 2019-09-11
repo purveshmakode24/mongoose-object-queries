@@ -21,13 +21,13 @@
             {% endfor %}
         {% endif %}
 
-        <form action="/submit" method="post">
+        <form action="/" method="post">
             <h2>Form Details:</h2>
             {#{{ messages('messages',locals) }}#}
 
             <div class="form-group">
                 <label for="fname">First Name:</label>
-                <input type="text" name="firstname" class="form-control">
+                <input type="text" name="firstname" class="form-control" value="{{ post_firstname }}">
                 {% if err %}
                     {% for item in err %}
                         {% if item.firstname %}
@@ -38,7 +38,7 @@
             </div>
             <div class="form-group">
                 <label for="lname">Last Name:</label>
-                <input type="text" name="lastname" class="form-control">
+                <input type="text" name="lastname" class="form-control" value="{{ post_lastname }}">
                 {% if err %}
                     {% for item in err %}
                         {% if item.lastname %}
@@ -53,6 +53,23 @@
 
     <h2>Post data from submit Form :</h2>
     {#<p>hello {{ name }}... what are you up to!</p>#}
+
+    {# -----update form errors #}
+    {% if err %}
+        {% for item in err %}
+            {% if item.updatefirstname %}
+                <p style="color: red">{{ item.updatefirstname.msg }}</p>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    {% if err %}
+        {% for item in err %}
+            {% if item.updatelastname %}
+                <p style="color: red">{{ item.updatelastname.msg }}</p>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
 
     <form action="/delete" method="post">
         <table class="table table-striped">
@@ -90,7 +107,7 @@
 
     {% for item in persons %}
         {#---UpdateModal--------#}
-        <form action="/update/{{ item.id }}" method="post">
+        <form action="/update/{{ item.id }}/{{ item.firstName }}/{{ item.lastName }}" method="post">
             <!-- The Modal -->
             <div class="modal" id="updateModal-{{ item.id }}">
                 <div class="modal-dialog">
@@ -110,9 +127,24 @@
                                     <td>First Name:<input type="text" class="form-control" name="updatefirstname"
                                                           value="{{ item.firstName }}"
                                                           required></td>
+                                    {#{% if err %}#}
+                                        {#{% for item in err %}#}
+                                            {#{% if item.updatefirstname %}#}
+                                                {#<p style="color: red">{{ item.updatefirstname.msg }}</p>#}
+                                            {#{% endif %}#}
+                                        {#{% endfor %}#}
+                                    {#{% endif %}#}
+
                                     <td>Last Name: <input type="text" class="form-control" name="updatelastname"
                                                           value="{{ item.lastName }}"
                                                           required></td>
+                                    {#{% if err %}#}
+                                        {#{% for item in err %}#}
+                                            {#{% if item.updatelastname %}#}
+                                                {#<p style="color: red">{{ item.updatelastname.msg }}</p>#}
+                                            {#{% endif %}#}
+                                        {#{% endfor %}#}
+                                    {#{% endif %}#}
                                 </tr>
                             </table>
                         </div>
