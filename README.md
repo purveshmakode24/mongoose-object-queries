@@ -1,3 +1,3 @@
-# mongoose-query-object-ops
+# mongoose-object-queries
 
 ### Basic operations on data objects using mongoose-queries!
